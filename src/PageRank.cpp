@@ -83,7 +83,7 @@ template <class edge>
 void run_pagerank(const char* filename, int nthreads) {
 
   Graph<PR, edge> G;
-  PageRank<edge> pr;
+  PageRank<edge> pr(0.15);
   Degree<PR, edge> dg;
 
  
@@ -109,7 +109,7 @@ void run_pagerank(const char* filename, int nthreads) {
 
   G.setAllActive();
   run_graph_program(&pr, G, -1, &pr_tmp);
-  
+ 
   gettimeofday(&end, 0);
   time = (end.tv_sec-start.tv_sec)*1e3+(end.tv_usec-start.tv_usec)*1e-3;
   printf("PR Time = %.3f ms \n", time);
