@@ -31,6 +31,9 @@
 
 #include <climits>
 #include "GraphMatRuntime.cpp"
+#ifdef POWER_PROFILING
+#include "power_rapl.h"
+#endif
 
 typedef unsigned int depth_type;
 
@@ -211,6 +214,14 @@ void run_bfs(char* filename, int nthreads, int v) {
   Graph<BFSD2> G;
   G.ReadMTX(filename, nthreads*4); //nthread pieces of matrix
   
+#ifdef POWER_PROFILING
+  power_rapl_t ps;
+  power_rapl_init(&ps);
+  printf("Monitoring power with RAPL on GraphMat BFS\n");
+#endif
+#ifdef POWER_PROFILING
+    power_rapl_start(&ps);
+#endif
   for (int i = 1; i <= G.nvertices; i++) {
     BFSD2 v;
     v.id = i;
@@ -238,7 +249,10 @@ void run_bfs(char* filename, int nthreads, int v) {
   //G.setAllActive();
   //run_graph_program(pc, G, 1, &pc_tmp);
   //run_dense_graph_program(b, G, -1);
-
+#ifdef POWER_PROFILING
+    power_rapl_end(&ps);
+    power_rapl_print(&ps);
+#endif
   gettimeofday(&end, 0);
   printf("Time = %.3f ms \n", (end.tv_sec-start.tv_sec)*1e3+(end.tv_usec-start.tv_usec)*1e-3);
  

@@ -1,6 +1,7 @@
 CXX=icpc
+CC=icc
 CXX_OPTIONS=-qopenmp -std=c++11 -I./src/ 
-
+BUILD_RAPL = Yes
 
 ifeq (${debug}, 1)
   CXX_OPTIONS += -g
@@ -13,6 +14,13 @@ CXX_OPTIONS += -xHost
 ifeq (${timing}, 1)
   CXX_OPTIONS += -D__TIMING
 else
+endif
+
+ifeq ($(BUILD_RAPL), Yes)
+  PAPI_HOME=/usr/local/packages/papi/git
+  CFLAGS = -I$(PAPI_HOME)/include -DPOWER_PROFILING=1 -g -Wall -ipo
+  CXX_OPTIONS += -DPOWER_PROFILING=1
+  LDLIBS = -L$(PAPI_HOME)/lib -Wl,-rpath,$(PAPI_HOME)/lib -lpapi -lm
 endif
 
 SRCDIR=src
@@ -37,8 +45,10 @@ $(BINDIR)/PageRank: $(DEPS) $(MULTINODEDEPS) $(SRCDIR)/PageRank.cpp $(SRCDIR)/De
 $(BINDIR)/IncrementalPageRank: $(DEPS) $(MULTINODEDEPS) $(SRCDIR)/IncrementalPageRank.cpp $(SRCDIR)/Degree.cpp 
 	$(CXX) $(CXX_OPTIONS) -o $(BINDIR)/IncrementalPageRank $(SRCDIR)/IncrementalPageRank.cpp 
 
-$(BINDIR)/BFS: $(DEPS) $(SRCDIR)/BFS.cpp
-	$(CXX) $(CXX_OPTIONS) -o $(BINDIR)/BFS $(SRCDIR)/BFS.cpp
+$(BINDIR)/BFS: $(DEPS) $(SRCDIR)/BFS.cpp $(SRCDIR)/power_rapl.c $(SRCDIR)/power_rapl.h
+	$(CC) $(CFLAGS) -c -o power_rapl.o $(SRCDIR)/power_rapl.c
+	$(CXX) $(CXX_OPTIONS) -c -o BFS.o $(SRCDIR)/BFS.cpp
+	$(CXX) $(CXX_OPTIONS) -o $(BINDIR)/BFS BFS.o power_rapl.o $(LDLIBS)
 
 $(BINDIR)/SGD: $(DEPS) $(SRCDIR)/SGD.cpp 
 	$(CXX) $(CXX_OPTIONS) -o $(BINDIR)/SGD $(SRCDIR)/SGD.cpp
@@ -56,4 +66,4 @@ $(BINDIR)/DS: $(DEPS) $(SRCDIR)/Delta.cpp
 	$(CXX) $(CXX_OPTIONS) -o $(BINDIR)/DS $(SRCDIR)/Delta.cpp
 
 clean:
-	rm $(EXE) bin/graph_converter
+	rm -f $(EXE) bin/graph_converter BFS.o power_rapl.o
