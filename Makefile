@@ -2,7 +2,7 @@ CXX=icpc
 CC=icc
 CXX_OPTIONS=-qopenmp -std=c++11 -I./src/ 
 # RAPL requires papi installed and superuser permission.
-BUILD_RAPL = Yes
+BUILD_RAPL = No
 
 ifeq (${debug}, 1)
   CXX_OPTIONS += -g
