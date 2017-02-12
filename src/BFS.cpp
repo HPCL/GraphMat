@@ -217,7 +217,6 @@ void run_bfs(char* filename, int nthreads, int v) {
 #ifdef POWER_PROFILING
   power_rapl_t ps;
   power_rapl_init(&ps);
-  printf("Monitoring power with RAPL on GraphMat BFS\n");
 #endif
 #ifdef POWER_PROFILING
     power_rapl_start(&ps);
@@ -251,6 +250,7 @@ void run_bfs(char* filename, int nthreads, int v) {
   //run_dense_graph_program(b, G, -1);
 #ifdef POWER_PROFILING
     power_rapl_end(&ps);
+    printf("Monitoring power with RAPL on GraphMat BFS\n");
     power_rapl_print(&ps);
 #endif
   gettimeofday(&end, 0);
